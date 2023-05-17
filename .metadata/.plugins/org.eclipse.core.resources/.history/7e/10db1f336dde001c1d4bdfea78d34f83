@@ -1,0 +1,503 @@
+package ptithcm.controller;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.taglibs.standard.lang.jstl.test.beans.PublicBean1;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.support.PagedListHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import ptithcm.bean.LapPhieuNhap;
+import ptithcm.entity.CTHD;
+import ptithcm.entity.CTPN;
+import ptithcm.entity.Hang;
+import ptithcm.entity.HoaDon;
+import ptithcm.entity.NhanVien;
+import ptithcm.entity.PhieuNhap;
+import ptithcm.entity.SanPham;
+
+@Controller
+@RequestMapping("NhanVien/")
+@Transactional
+public class NhanVienPhieuNhapController {
+	@Autowired
+	SessionFactory factory;
+	List<SanPham> listSP = new ArrayList<>();
+	List<CTPN> listCTPN = new  ArrayList<>();
+	Integer Id = 0;
+	Integer IdPN = 0;
+	
+	// ======================== Sản Phẩm ============================//
+	public SanPham getSanPham(Integer id) {
+		//System.out.println(id);
+		Session session = factory.getCurrentSession();
+		return (SanPham) session.get(SanPham.class, id); 
+	}
+	
+	public List<Integer> LayMaSP(Integer id){
+		Session session = factory.getCurrentSession();
+		String hql = "select CT.sanPham.MASP from CTPN CT where CT.phieuNhap.MAPN = " + id;
+		Query query = session.createQuery(hql);
+		List<Integer> list = query.list();
+		return list;
+	}
+	
+	// ======================== Nhân Viên =======================//
+	public NhanVien getNV(Integer id) {
+		//System.out.println(id);
+		Session session = factory.getCurrentSession();
+		return (NhanVien) session.get(NhanVien.class, id); 
+	}
+	
+	// ================== Phiếu Nhập =============================//
+	public PhieuNhap getPhieuNhap(Integer id) {
+		Session session = factory.getCurrentSession();
+		return (PhieuNhap) session.get(PhieuNhap.class, id);
+	}
+	
+	public List<PhieuNhap> getPhieuNhaps(){
+		String ngay = java.time.LocalDate.now().toString();
+		Session session = factory.getCurrentSession();
+		String hql = "from PhieuNhap where NGAYNHAP = '" + ngay + "'";
+		Query query = session.createQuery(hql);
+		List<PhieuNhap> list = query.list();
+		return list;
+	}
+	
+	public Integer ThemPN(PhieuNhap pn) {
+		Session session = factory.openSession();
+		Transaction t = session.beginTransaction();
+
+		try {
+			session.save(pn);
+			t.commit();
+		} catch (Exception e) {
+			t.rollback();
+			return 0;
+		} finally {
+			session.close();
+		}
+		return 1;
+	}
+	
+	public Integer XoaPN(PhieuNhap pn) {
+		Session session = factory.openSession();
+		Transaction t = session.beginTransaction();
+
+		try {
+			session.delete(pn);
+			t.commit();
+		} catch (Exception e) {
+			System.out.println(e.toString());
+			t.rollback();
+			return 0;
+		} finally {
+			session.close();
+		}
+		return 1;
+	}
+	
+	
+	
+	// ======================= CTPN ==============================//
+	
+	public void getCTPNs(Integer id) {
+		Session session = factory.getCurrentSession();
+		String hql = "from CTPN CT where CT.phieuNhap.MAPN = " + id;
+		Query query = session.createQuery(hql);
+		listCTPN = query.list();
+	}
+	
+	public CTPN getCTPN(Integer id, Integer idsp) {
+		//System.out.println(id);
+		Session session = factory.getCurrentSession();
+		String hql = "from CTPN CT where CT.phieuNhap.MAPN = " + id
+					+ " and CT.sanPham.MASP = " + idsp;
+		Query query = session.createQuery(hql);
+		CTPN list = (CTPN)query.list().get(0);
+		return list;
+	}
+	
+	public Integer ThemCTPN(CTPN ctpn) {
+		Session session = factory.openSession();
+		Transaction t = session.beginTransaction();
+
+		try {
+			session.save(ctpn);
+			t.commit();
+		} catch (Exception e) {
+			t.rollback();
+			return 0;
+		} finally {
+			session.close();
+		}
+		return 1;
+	}
+	
+	
+	public Integer HieuChinhCTPN(CTPN ctpn) {
+		Session session = factory.openSession();
+		Transaction t = session.beginTransaction();
+
+		try {
+			session.update(ctpn);
+			t.commit();
+		} catch (Exception e) {
+			t.rollback();
+			return 0;
+		} finally {
+			session.close();
+		}
+		return 1;
+	}
+	
+	public Integer XoaCTPN(CTPN ctpn) {
+		Session session = factory.openSession();
+		Transaction t = session.beginTransaction();
+
+		try {
+			session.delete(ctpn);
+			t.commit();
+		} catch (Exception e) {
+			t.rollback();
+			return 0;
+		} finally {
+			session.close();
+		}
+		return 1;
+	}	
+	
+	@RequestMapping("PhieuNhap")
+	public String TrangChu(ModelMap model)
+	{
+		model.addAttribute("id", Id);
+		model.addAttribute("sp", this.getSanPham(Id));
+		model.addAttribute("listSP", listSP);
+		return "NhanVien/PhieuNhap"; 
+	}
+	
+	
+	
+	
+	//===================================== Thêm Phiếu Nhập ===================================//
+	
+	@RequestMapping(value = "PhieuNhap", params = "btnsearch", method = RequestMethod.POST)
+	public String TimSanPhamHD(ModelMap model, @RequestParam("masp") Integer id, HttpServletRequest request)
+	{
+		//listSP.add(getSanPham(id));
+		String s = "";
+		for(SanPham sp: listSP)
+		{
+			s = "SL_" + sp.getMASP().toString();
+			Integer x = Integer.valueOf(request.getParameter(s)); 
+			sp.setSLTON(x);
+			s = "Gia_" + sp.getMASP().toString();
+			x = Integer.valueOf(request.getParameter(s));
+			sp.setGIA(x);
+		}
+		Id = id;
+		model.addAttribute("id", Id);
+		model.addAttribute("sp", this.getSanPham(Id));
+		model.addAttribute("listSP", listSP);
+//		Id = 0;
+		return "NhanVien/PhieuNhap"; 
+	}
+	
+	@RequestMapping(value = "PhieuNhap", params = "btnthemsp", method = RequestMethod.POST)
+	public String ThemSanPhamPN(ModelMap model, HttpServletRequest request)
+	{
+		if(Id == 0)
+			return "redirect:/NhanVien/PhieuNhap.htm";
+		String s = "";
+		for(SanPham sp: listSP)
+		{
+			s = "SL_" + sp.getMASP().toString();
+			Integer x = Integer.valueOf(request.getParameter(s)); 
+			sp.setSLTON(x);
+			s = "Gia_" + sp.getMASP().toString();
+			x = Integer.valueOf(request.getParameter(s));
+			sp.setGIA(x);
+		}
+		for(SanPham sp: listSP)
+		{
+			if(sp.getMASP() == Id)
+			{
+				sp.setSLTON(sp.getSLTON() + 1);
+				model.addAttribute("listSP", listSP);
+				return "NhanVien/PhieuNhap";
+			}
+		}
+		SanPham sp = getSanPham(Id);
+		sp.setSLTON(1);
+//		sp.setGIA(sp.getGIA());
+		listSP.add(sp);
+		model.addAttribute("listSP", listSP);
+//		dangThem = true;
+		Id = 0;
+		return "NhanVien/PhieuNhap"; 
+	}
+	
+	@RequestMapping("PhieuNhap/{id}.htm")
+	public String XoaSanPhamPN(ModelMap model,  @PathVariable("id") Integer id)
+	{
+		System.out.println("Vô");
+		int i = 0;
+		int vtxoa = 0;
+		for(SanPham sp: listSP)
+		{
+			if(sp.getMASP() == id)
+				vtxoa = i;
+			i++;
+		}
+		listSP.remove(vtxoa);
+		model.addAttribute("listSP", listSP);
+		return "NhanVien/PhieuNhap"; 
+	}
+	
+	@RequestMapping(value = "PhieuNhap", params = "btntaoPN", method = RequestMethod.POST)
+	public String XuatPN(ModelMap model, HttpSession session, HttpServletRequest request)
+	{
+		
+		//listSP.add(getSanPham(id));
+		Id = 0;
+		if(listSP.size() == 0)
+		{
+			model.addAttribute("id", Id);
+			model.addAttribute("sp", this.getSanPham(Id));
+			model.addAttribute("listSP", listSP);
+			return "NhanVien/PhieuNhap";
+		}
+		//System.out.println(Id);
+		PhieuNhap pn = new PhieuNhap();
+		NhanVien nv = getNV(2);
+		pn.setNhanVien(nv);
+		String ngay = java.time.LocalDate.now().toString();
+		pn.setNGAYNHAP(ngay);
+		Integer temp = ThemPN(pn);
+		
+		String s = "";
+		for(SanPham sp: listSP)
+		{
+			
+			CTPN ctpn = new CTPN();
+			ctpn.setPhieuNhap(pn);
+			ctpn.setSanPham(sp);
+			s = "SL_" + sp.getMASP().toString();
+			Integer x = Integer.valueOf(request.getParameter(s));
+			ctpn.setSL(x);
+			s = "Gia_" + sp.getMASP().toString();
+			x = Integer.valueOf(request.getParameter(s));
+			ctpn.setDONGIA(x);
+//			ctdh.setSL(0);
+			temp = this.ThemCTPN(ctpn);
+			if (temp != 0) {
+				System.out.println("Thêm Thành Công");
+			}
+		}
+		listSP.clear();
+		model.addAttribute("id", Id);
+		model.addAttribute("sp", this.getSanPham(Id));
+		model.addAttribute("listSP", listSP);
+//		dangThem = false;
+		return "NhanVien/PhieuNhap"; 
+	}
+	
+	// ======================================== Xóa ===========================================//
+	
+	@RequestMapping("HieuChinhPhieuNhap")
+	public String SuaPhieuNhap(HttpServletRequest request, ModelMap model) {
+//		if(dangThem)
+//		{
+//			return "redirect:/NhanVien/HoaDon.htm";
+//		}
+		List<PhieuNhap> listPN = getPhieuNhaps();
+		PagedListHolder pagedListHolder = new PagedListHolder(listPN);
+		int page = ServletRequestUtils.getIntParameter(request, "p", 0);
+		pagedListHolder.setPage(page);
+		// SỐ page
+		pagedListHolder.setMaxLinkedPages(5);
+		// Số dòng
+		pagedListHolder.setPageSize(10);
+		// model.addAttribute("btnStatus", "btnAdd");
+		model.addAttribute("pagedListHolder", pagedListHolder);
+		return "NhanVien/SuaPhieuNhap";
+	}
+	
+	@RequestMapping(value = "HieuChinhPhieuNhap/{id}.htm", params = "linkDelete", method = RequestMethod.POST)
+	public String XoaPhieuNhaps(HttpServletRequest request, ModelMap model, @PathVariable("id") Integer id) {
+		System.out.println("Vô rồi xoa");
+		PhieuNhap pn = this.getPhieuNhap(id);
+		getCTPNs(id);
+		while(listCTPN.size() != 0) {
+			Integer tmp = XoaCTPN(listCTPN.get(0));
+			listCTPN.remove(0);
+			System.out.println(tmp);
+		}
+		Integer temp = XoaPN(pn);
+//		System.out.println(id);
+		return "redirect:/NhanVien/HieuChinhPhieuNhap.htm";
+	}
+	
+	// ================================== Hiệu Chỉnh =====================================//
+	@RequestMapping(value ="HieuChinhPhieuNhap/{id}.htm", params = "linkEdit")
+	public String HieuChinhHD(HttpServletRequest request, ModelMap model, @PathVariable("id") Integer id) {
+		List<Integer> list = new ArrayList<>();
+		IdPN = id;
+		list = this.LayMaSP(id);
+		for(Integer i:list)
+			System.out.println(i);
+		while(list.size() != 0)
+		{
+			SanPham sp1 = new SanPham();
+			Integer i = list.get(0);
+			sp1 = getSanPham(i);
+			CTPN ct = getCTPN(id, i);
+			sp1.setSLTON(ct.getSL());
+			listSP.add(sp1);
+			list.remove(0);
+		}
+		model.addAttribute("id", Id);
+		model.addAttribute("sp", this.getSanPham(Id));
+		model.addAttribute("listSP", listSP);
+		// model.addAttribute("btnStatus", "btnAdd");
+		return "NhanVien/SuaChiTietPhieuNhap";
+	}
+	
+	@RequestMapping(value = "SuaChiTietPhieuNhap", params = "btnsearch", method = RequestMethod.POST)
+	public String TimSanPhamSuaHD(ModelMap model, @RequestParam("masp") Integer id, HttpServletRequest request)
+	{
+		//listSP.add(getSanPham(id));
+		String s = "";
+		for(SanPham sp: listSP)
+		{
+			s = "SL_" + sp.getMASP().toString();
+			Integer x = Integer.valueOf(request.getParameter(s)); 
+			sp.setSLTON(x);
+			s = "Gia_" + sp.getMASP().toString();
+			x = Integer.valueOf(request.getParameter(s));
+			sp.setGIA(x);
+		}
+		Id = id;
+		model.addAttribute("id", Id);
+		model.addAttribute("sp", this.getSanPham(Id));
+		model.addAttribute("listSP", listSP);
+//		Id = 0;
+		return "NhanVien/SuaChiTietPhieuNhap"; 
+	}
+	
+	@RequestMapping(value = "SuaChiTietPhieuNhap", params = "btnthemsp", method = RequestMethod.POST)
+	public String ThemSanPhamSuaPN(ModelMap model, HttpServletRequest request)
+	{
+		if(Id == 0)
+		{
+			model.addAttribute("id", Id);
+			model.addAttribute("sp", this.getSanPham(Id));
+			model.addAttribute("listSP", listSP);
+			return "NhanVien/SuaChiTietPhieuNhap";
+		}
+			
+		String s = "";
+		for(SanPham sp: listSP)
+		{
+			s = "SL_" + sp.getMASP().toString();
+			Integer x = Integer.valueOf(request.getParameter(s)); 
+			sp.setSLTON(x);
+			s = "Gia_" + sp.getMASP().toString();
+			x = Integer.valueOf(request.getParameter(s));
+			sp.setGIA(x);
+		}
+		for(SanPham sp: listSP)
+		{
+			if(sp.getMASP() == Id)
+			{
+				sp.setSLTON(sp.getSLTON() + 1);
+				model.addAttribute("listSP", listSP);
+				return "NhanVien/SuaChiTietPhieuNhap";
+			}
+		}
+		SanPham sp = getSanPham(Id);
+		sp.setSLTON(1);
+		PhieuNhap pn = getPhieuNhap(IdPN);
+		CTPN ct = new CTPN();
+		ct.setSanPham(sp);
+		ct.setPhieuNhap(pn);
+		ct.setSL(sp.getSLTON());
+		ct.setDONGIA(sp.getGIA());
+		Integer tmp = this.ThemCTPN(ct);
+		listSP.add(sp);
+		model.addAttribute("listSP", listSP);
+//		dangThem = true;
+		Id = 0;
+		return "NhanVien/SuaChiTietPhieuNhap"; 
+	}
+	
+	@RequestMapping("SuaChiTietPhieuNhap/{id}.htm")
+	public String XoaSuaSanPhamPN(ModelMap model,  @PathVariable("id") Integer id)
+	{
+		int i = 0;
+		int vtxoa = 0;
+		
+		for(SanPham sp: listSP)
+		{
+			if(sp.getMASP() == id)
+				vtxoa = i;
+			i++;
+		}
+		if(listSP.size() == 1)
+		{
+			model.addAttribute("id", Id);
+			model.addAttribute("sp", this.getSanPham(Id));
+			model.addAttribute("listSP", listSP);
+			return "NhanVien/SuaChiTietPhieuNhap";
+		}
+			
+		listSP.remove(vtxoa);
+		CTPN ct = this.getCTPN(IdPN, id);
+		Integer tmp = this.XoaCTPN(ct);
+		model.addAttribute("listSP", listSP);
+		return "NhanVien/SuaChiTietPhieuNhap"; 
+	}
+	
+	@RequestMapping(value = "SuaChiTietPhieuNhap", params = "btntaoPN", method = RequestMethod.POST)
+	public String LuuHD(ModelMap model, HttpSession session, HttpServletRequest request)
+	{
+		
+		//listSP.add(getSanPham(id));
+		Id = 0;
+		String s = "";
+		for(SanPham sp: listSP)
+		{
+			s = "SL_" +sp.getMASP().toString();
+			CTPN ctpn = getCTPN(IdPN, sp.getMASP());
+			Integer x = Integer.valueOf(request.getParameter(s));
+			ctpn.setSL(x);
+			s = "Gia_" + sp.getMASP().toString();
+			x =  Integer.valueOf(request.getParameter(s));
+			ctpn.setDONGIA(x);
+			Integer temp = this.HieuChinhCTPN(ctpn);
+			if (temp != 0) {
+				System.out.println("Sửa Thành Công");
+			}
+		}
+		listSP.clear();
+		model.addAttribute("id", Id);
+		model.addAttribute("sp", this.getSanPham(Id));
+		model.addAttribute("listSP", listSP);
+//		dangThem = false;
+		return "NhanVien/PhieuNhap"; 
+	}
+}

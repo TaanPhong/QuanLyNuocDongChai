@@ -1,0 +1,238 @@
+package ptithcm.controller;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.SimpleFormatter;
+
+import javax.mail.internet.MimeMessage;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.support.PagedListHolder;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import ptithcm.bean.Mailer;
+import ptithcm.entity.*;
+
+
+@Controller
+@RequestMapping("Login/")
+@Transactional
+public class LoginController {
+	@Autowired
+	SessionFactory factory;
+	@Autowired
+	Mailer mailer;
+	
+	@RequestMapping(value = "Login", method = RequestMethod.GET)
+	public String Login() {
+		return "Login/login";
+	}
+
+	@RequestMapping(value = "Sig_in", method = RequestMethod.POST)
+	public String SigIn(ModelMap model, HttpSession session, HttpServletRequest request,
+			@Validated @ModelAttribute("taiKhoan") TaiKhoan taiKhoan, BindingResult errors) {
+		System.out.println("vô sigin");
+		System.out.println(request.getParameter("pwd"));
+//		if(taiKhoan.getTenDN().trim().length() == 0) {
+//			errors.rejectValue("TenDN", "taiKhoan", "Vui long tên đăng nhập !");
+//		}
+//		if(taiKhoan.getMK() == null) {
+//			errors.rejectValue("MK", "taiKhoan", "Vui long nhap mật khẩu !");
+//		}
+		
+		String captcha = session.getAttribute("captcha_security").toString();
+		String verifyCaptcha = request.getParameter("captcha");
+		boolean kt = false;
+		if (captcha.equals(verifyCaptcha))
+			kt = true;
+		else
+			kt = false;
+		if(errors.hasErrors() || !kt)
+		{
+			if(!kt)
+				model.addAttribute("reCatra", "Vui lòng nhập reCaptra");
+			return "Login/login";
+		}
+		else
+		{
+			
+			
+			try {
+				TaiKhoan tmp = getTK(request.getParameter("tenDN"), request.getParameter("pwd"));
+				if(tmp != null)
+				{
+					session.setAttribute("tai_Khoan", tmp);
+					if(tmp.getPhanQuyen().getMAPQ() == 1)
+					{
+						session.setAttribute("tk_QL", this.getNV(tmp.getMATK()));
+						return "redirect:/QuanLy/TrangChu.htm";
+					}
+					else if(tmp.getPhanQuyen().getMAPQ() == 2)
+					{
+						session.setAttribute("tk_NV", this.getNV(tmp.getMATK()));
+						return "NhanVien/TrangChu";
+					}
+					else
+					{
+						session.setAttribute("tk_KH", this.getNV(tmp.getMATK()));
+						return "index";
+					}
+				}
+				else
+				{
+					System.out.println("Vô");
+					errors.rejectValue("TenDN", "taiKhoan", "Tài khoản hoặc mật khẩu không đúng!");
+					errors.rejectValue("MK", "taiKhoan", "Tài khoản hoặc mật khẩu không đúng!");
+					return "Login/login";
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				model.addAttribute("message","account do not exits");
+				return "Login/login";
+			}
+			
+		}
+		//return "";
+	}
+	
+	public TaiKhoan getTK(String tenDN, String pwd)
+	{
+		Session session = factory.getCurrentSession();
+		String hql = "from TaiKhoan where TenDN = '" + tenDN +"'" + " and MK = '" + pwd + "'";
+		Query query = session.createQuery(hql);
+		TaiKhoan tk = (TaiKhoan)query.list().get(0);
+		return tk;
+	}
+	
+	public NhanVien getNV(Integer Id) {
+		Session session = factory.getCurrentSession();
+		String hql = "from NhanVien where MATK = " + Id;
+		Query query = session.createQuery(hql);
+		NhanVien nv = (NhanVien)query.list().get(0);
+		return nv;
+	}
+	
+	public KhachHang getKH(Integer Id) {
+		Session session = factory.getCurrentSession();
+		String hql = "from KhachHang where MATK = " + Id;
+		Query query = session.createQuery(hql);
+		KhachHang kh = (KhachHang)query.list().get(0);
+		return kh;
+	}
+	
+	@RequestMapping("LogOut")
+	public String LogOut(HttpSession ss)
+	{
+		ss.removeAttribute("taiKhoan");
+		return "redirect:/Home/index.htm";
+	}
+	
+	//========================= Đăng Ký =============================//
+	
+	public Integer ThemTaiKhoan(TaiKhoan tk) {
+		Session session = factory.openSession();
+		Transaction t = session.beginTransaction();
+		try {
+			session.save(tk);
+			t.commit();
+		} catch (Exception e) {
+			// TODO: handle exception
+			t.rollback();
+			return 0;
+		} finally {
+			session.close();
+		}
+		return 1;
+	}
+	
+	public Integer ThemKhachHang(KhachHang kh) {
+		Session session = factory.openSession();
+		Transaction t = session.beginTransaction();
+		try {
+			session.save(kh);
+			t.commit();
+		} catch (Exception e) {
+			// TODO: handle exception
+			t.rollback();
+			return 0;
+		} finally {
+			session.close();
+		}
+		return 1;
+	}
+	
+	public PhanQuyen getPhanQuyen()
+	{
+		Session session = factory.getCurrentSession();
+		return (PhanQuyen) session.get(PhanQuyen.class, 3);
+	}
+	
+	@RequestMapping(value = "DangKy", method = RequestMethod.GET)
+	public String DangKy(ModelMap model)
+	{
+		model.addAttribute("khachHang", new KhachHang());
+		model.addAttribute("taiKhoan", new TaiKhoan());
+		return "Login/DangKy";
+	}
+	
+	@RequestMapping(value = "TaoTaiKhoan", method = RequestMethod.POST)
+	public String TaoTaiKhoan(HttpServletRequest request,  ModelMap model,
+			@ModelAttribute("khachHang") KhachHang khachHang, @ModelAttribute("taiKhoan") TaiKhoan taiKhoan,
+			@RequestParam("ngsinh") String ngs, @RequestParam("pwd") String pwd, @RequestParam("pwd1") String pwd1)
+	{
+		if(!pwd.equals(pwd1))
+		{
+			//System.out.println();
+			return "redirect:/Login/DangKy.htm";
+		}
+		PhanQuyen phanQuyen = this.getPhanQuyen();
+		//System.out.println(phanQuyen.getMAPQ());
+		taiKhoan.setPhanQuyen(phanQuyen);
+		System.out.println(taiKhoan.getTenDN());
+		taiKhoan.setMK(pwd);
+		khachHang.setTaiKhoan(taiKhoan);
+		khachHang.setNGSINH(ngs);
+		khachHang.setDIEMTL(0);
+		Integer tmp = this.ThemTaiKhoan(taiKhoan);
+		if (tmp != 0) {
+			model.addAttribute("message", "Thêm thành công");
+		} else {
+			model.addAttribute("message", "Thêm thất bại!");
+		}
+		Integer temp = this.ThemKhachHang(khachHang);
+		if (temp != 0) {
+			model.addAttribute("message", "Thêm thành công");
+		} else {
+			model.addAttribute("message", "Thêm thất bại!");
+		}
+//			String body = tai
+		try {
+			// Gửi mail
+			mailer.send(khachHang.getEMAIL(), "Tạo Tài Khoản Thành công",
+					"Tên đăng nhập: " + taiKhoan.getTenDN() + "\n" + "Mật khẩu: " + taiKhoan.getMK());
+			model.addAttribute("message", "Gửi email thành công !");
+		} catch (Exception ex) {
+			model.addAttribute("message", "Gửi email thất bại !");
+		}
+		return "redirect:/Home/index.htm";
+	}
+}

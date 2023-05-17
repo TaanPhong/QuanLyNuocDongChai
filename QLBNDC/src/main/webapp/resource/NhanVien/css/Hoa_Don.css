@@ -1,0 +1,77 @@
+@import url('https://fonts.google.com/specimen/Merriweather');
+
+:root {
+    --color-primary: #e74c3c;
+    /* --color-danger: #ff7782; */
+    --color-success: #41f1b6;
+    --color-warning: #ffbb55;
+    --color-white: #fff;
+    --color-info-dark: #7d8da1;
+    --color-info-light: #dce1eb;
+    --color-drak: #363949;
+    --color-light: rgba(132, 139, 200, 0.18);
+    --color-primary-variant: #111e88;
+    --color-dark-variant: #677483;
+    --color-background: #f6f6f9;
+    --color-background-hover: #ebeef2;
+    --color-backgronud-hover-main: #03a9f4;
+    --card-border-radius: 2rem;
+    --border-radius-1: 0.4rem;
+    --border-radius-2: 0.8rem;
+    --border-radius-3: 1.2rem;
+
+    --card-padding: 1.8rem;
+    --padding-1: 1.2rem;
+
+    --box-shadow: 0 2rem 3rem var(--color-light);
+}
+
+html, body{
+    width: 100%;
+    height: 100%;
+    font-family: 'Merriweather';
+    font-size: 25px;
+    font-weight: 600;
+    color: #222;
+}
+
+.navbar{
+    background-color: rgb(237, 28, 36) !important;
+}
+
+.navbar li a{
+    color: white !important;
+}
+
+.navbar li a.active {
+	color: black !important;
+}
+
+
+.navbar li a:hover{
+    color: black !important;
+}
+
+/* ======================= Giao Diện nhập liệu hóa đơn ========================== */
+.main{
+    position: relative;
+    width: 100%;
+    padding: 20px;
+    padding-top: 0;
+    display: grid;
+    grid-gap: 20px;
+    grid-template-columns: 2fr 1fr;
+    font-size: 18px;
+    /* background: white; */
+}
+
+.main .recentCustomers{
+    position: fixed;
+/*     display: grid; */
+    height: 100%;
+    min-width: 450px;
+    background-color: #00FFFF !important;
+    padding: 20px;
+    right: 0px;
+}
+

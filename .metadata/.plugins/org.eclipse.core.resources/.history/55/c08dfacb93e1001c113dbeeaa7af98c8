@@ -1,0 +1,19 @@
+function xoagiohang(id){
+	let ma= parseInt(id)
+	$.ajax({
+        type: "GET",
+        contentType: "application/json",
+        url: "KhachHang/GioHang/delete.htm",
+        data: {"id": id},
+        dataType: 'json',
+        cache: false,
+        timeout: 60000,
+        success: function (data) {
+	 
+        alert(data);
+        },
+        error: function (e) {
+           console.log(e);
+        }
+    });
+}

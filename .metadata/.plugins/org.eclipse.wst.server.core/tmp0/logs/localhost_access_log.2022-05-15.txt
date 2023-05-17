@@ -1,0 +1,10 @@
+127.0.0.1 - - [15/May/2022:16:05:12 +0700] "GET / HTTP/1.1" 404 751
+0:0:0:0:0:0:0:1 - - [15/May/2022:16:05:13 +0700] "GET /QLBNDC/ HTTP/1.1" 200 160
+0:0:0:0:0:0:0:1 - - [15/May/2022:16:05:13 +0700] "GET /favicon.ico HTTP/1.1" 404 762
+0:0:0:0:0:0:0:1 - - [15/May/2022:16:05:17 +0700] "GET /QLBNDC/QuanLy/TrangChu.htm HTTP/1.1" 200 8525
+0:0:0:0:0:0:0:1 - - [15/May/2022:16:05:17 +0700] "GET /QLBNDC/resource/QuanLy/css/QuanlyTrangChu.css HTTP/1.1" 200 8912
+0:0:0:0:0:0:0:1 - - [15/May/2022:16:05:17 +0700] "GET /QLBNDC/resource/QuanLy/image/avatar.jpg HTTP/1.1" 200 1433
+0:0:0:0:0:0:0:1 - - [15/May/2022:16:05:17 +0700] "GET /QLBNDC/resource/QuanLy/image/logo-vingroup-inkythuatso-13-13-41-00.jpg HTTP/1.1" 200 24233
+0:0:0:0:0:0:0:1 - - [15/May/2022:16:05:17 +0700] "GET /QLBNDC/resource/QuanLy/image/Vinmart_logo_sieu_thi%20(1).png HTTP/1.1" 200 12326
+0:0:0:0:0:0:0:1 - - [15/May/2022:16:05:17 +0700] "GET /QLBNDC/QuanLy/DMSans-Regular.ttf HTTP/1.1" 404 791
+0:0:0:0:0:0:0:1 - - [15/May/2022:16:05:26 +0700] "GET /QLBNDC/QuanLy/Quanly-SanPham.html HTTP/1.1" 404 792

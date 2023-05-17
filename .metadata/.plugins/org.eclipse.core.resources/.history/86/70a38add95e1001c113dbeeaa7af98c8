@@ -1,0 +1,19 @@
+
+$( document ).ready(function xoagiohang(id){
+	$.ajax({
+        type: "GET",
+        contentType: "application/json",
+        url: "KhachHang/GioHang/delete.htm",
+        data: {"id": id},
+        dataType: 'json',
+        cache: false,
+        timeout: 60000,
+        success: function (data) {
+        alert(data);
+         $(`#${id}`).remove();
+        },
+        error: function (e) {
+           console.log(e);
+        }
+    });
+} );

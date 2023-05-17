@@ -1,0 +1,134 @@
+body{
+
+    background:#eee;
+}
+.ui-w-40 {
+    width: 40px !important;
+    height: auto;
+}
+
+.card{
+    box-shadow: 0 1px 15px 1px rgba(52,40,104,.08);    
+}
+
+.ui-product-color {
+    display: inline-block;
+    overflow: hidden;
+    margin: .144em;
+    width: .875rem;
+    height: .875rem;
+    border-radius: 10rem;
+    -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15) inset;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.15) inset;
+    vertical-align: middle;
+}
+
+.step-wizard {
+    /*height: 100vh; */
+    margin: auto !important;
+    width: 100% !important;
+    max-width: 800px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+.step-wizard-list{
+    background: #fff;
+    /* box-shadow: 0 15px 25px rgba(0,0,0,0.1); */
+    color: #333 !important;
+    list-style-type: none !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    padding: 10px !important;
+    position: relative !important;
+    z-index: 10 !important;
+    width: 100% !important;
+}
+
+.step-wizard-item{
+    padding: 0 10px !important;
+    flex-basis: 0 !important;
+    -webkit-box-flex: 1 !important;
+    -ms-flex-positive:1 !important;
+    flex-grow: 1 !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    text-align: center !important;
+    min-width: 50px !important;
+    position: relative !important;
+}
+.step-wizard-item + .step-wizard-item:after{
+    content: "" !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 19px !important;
+    background: #f15a24 !important;
+    width: 100% !important;
+    height: 2px !important;
+    transform: translateX(-50%) !important;
+    z-index: -10 !important;
+}
+.progress-count{
+    height: 40px !important;
+    width:40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    font-weight: 600 !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    z-index:10 !important;
+    color: transparent !important;
+}
+.progress-count:after{
+    content: "" !important;
+    height: 40px !important;
+    width: 40px !important;
+    background: #f15a24 !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    border-radius: 50% !important;
+    z-index: -10 !important;
+}
+.progress-count:before{
+    content: "" !important;
+    height: 10px !important;
+    width: 20px !important;
+    border-left: 3px solid #fff !important;
+    border-bottom: 3px solid #fff !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -60%) rotate(-45deg) !important;
+    transform-origin: center center !important;
+}
+.progress-label{
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    margin-top: 10px !important;
+}
+.current-item .progress-count:before,
+.current-item ~ .step-wizard-item .progress-count:before{
+    display: none !important;
+}
+.current-item ~ .step-wizard-item .progress-count:after{
+    height:10px !important;
+    width:10px !important;
+}
+.current-item ~ .step-wizard-item .progress-label{
+    opacity: 0.5 !important;
+}
+.current-item .progress-count:after{
+    background: #fff !important;
+    border: 2px solid #f15a24 !important;
+}
+.current-item .progress-count{
+    color: #f15a24 !important;
+}
+
+
+
